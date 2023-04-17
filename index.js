@@ -12,7 +12,9 @@ mongoose.connect("mongodb://0.0.0.0:27017/Test", {
 });
 const authRoutes = require('./routes/authRoutes')
 const postRoutes = require('./routes/postRoutes')
+const chatRoutes = require('./routes/chatRoutes')
 
 app.use('/auth', authRoutes)
 app.use('/post',postRoutes)
+app.use('/chat',chatRoutes)
 app.listen(5000, console.log('server is running on port 5000'))
