@@ -11,8 +11,8 @@ mongoose.connect("mongodb://0.0.0.0:27017/Test", {
   useUnifiedTopology: true,
 });
 const authRoutes = require('./routes/authRoutes')
-//const postRoutes = require('./routes/postRoutes')
+const postRoutes = require('./routes/postRoutes')
 
 app.use('/auth', authRoutes)
-//app.use('/post',postRoutes)
+app.use('/post',postRoutes)
 app.listen(5000, console.log('server is running on port 5000'))
