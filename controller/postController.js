@@ -42,4 +42,16 @@ const getPost = async (req, res) => {
     });
     res.json(answer);
 };
-module.exports = { createPost, getPost }
+const addComment = async (req, res) => {
+    if (!req.user._id) return res.status(401).json("user is not authorized");
+    let comment = await Comment.create({
+        content: req.body.content,
+        writer: req.user._id,
+    });
+    await Post.findOneAndUpdate(
+        { id: req.body.id },
+        { $push: { comments: comment._id } }
+    );
+    res.status(200).json("comment added");
+};
+module.exports = { createPost, getPost, addComment }
