@@ -1,8 +1,10 @@
 const router = require('express').Router()
-const { signUp, signIn, sendRequest, acceptRequest, cancelRequest } = require('../controller/authController')
+const { signUp, signIn, sendRequest, acceptRequest, cancelRequest,getFriends,unFriend } = require('../controller/authController')
 router.post('/signup'  ,  signUp)
 router.post('/signin', signIn)
 router.post('/sendrequest', check.isLogin, sendRequest)
 router.post('/acceptrequest', check.isLogin, acceptRequest)
 router.post('/cancelrequest', check.isLogin, cancelRequest)
+router.post('/unfriend', check.isLogin, unFriend)
+router.get('/friends', check.isLogin , getFriends)
 module.exports = router;

@@ -131,10 +131,42 @@ const signIn = async (req, res) => {
   });
 };
 
+const unFriend = async (req, res) => {
+  const friendData = await User.findById(req.body.id);
+  const myData = await User.findById(req.user._id);
+  if (!friendData || !myData || req.id == req.user._id)
+    return res.status(400).json("Invalid user");
+
+  let tmm = false;
+  myData.connections.map((item) => {
+    if (item._id == req.body.id) tmm = true;
+  });
+  if (!tmm) res.status(400).json("You have not this connection");
+  let result = await User.findByIdAndUpdate(req.user._id, {
+    $pull: { connections: req.body.id },
+  });
+  await User.findByIdAndUpdate(req.body.id, {
+    $pull: { connections: req.user._id },
+  });
+
+  res.status(200).json(result);
+};
+
+const getFriends = async (req, res) => {
+  let temp = await User.find({});
+  let result = [];
+  temp.map((item) => {
+    if (item._id != req.user._id) result.push(item);
+  });
+  res.json(result);
+};
+
 module.exports = {
   signUp,
   signIn,
   sendRequest,
   acceptRequest,
-  cancelRequest
+  cancelRequest,
+  unFriend,
+  getFriends
 };
