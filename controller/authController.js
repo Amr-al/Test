@@ -1,15 +1,28 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/userModel");
+const Joi = require("joi");
 
 const signUp = async (req, res) => {
   const name = req.body.name;
   const email = req.body.email;
   const password = req.body.password;
-  if (!name || !email || !password) {
-    res.status(400).json("data is missing");
+  const schema = Joi.object({
+    name: Joi.string().required().max(50),
+    email: Joi.string().email({
+      minDomainSegments: 2,
+      tlds: { allow: ["com", "net"] },
+    }).required(),
+    password: Joi.string().min(3).max(20).required(),
+    password2:Joi.ref('password')
+  });
+  const error = schema.validate(req.body)
+  console.log(error.error);
+  if (error.error) {
+    res.status(400).json(error);
     return;
   }
+ 
   let data = await User.find({ email: email });
   if (data.length) {
     res.status(401).json("user already exist");
@@ -34,86 +47,85 @@ const signUp = async (req, res) => {
 };
 
 const sendRequest = async (req, res) => {
-    const friendData = await User.findById(req.body.id);
-    const myData = await User.findById(req.user._id);
-    if (!friendData || !myData || req.id == req.user._id)
-        return res.status(400).json("Invalid user");
-    let sendTome = false,
-        iSentToHim = false,
-        alreadyFriend = false;
-    myData.recievedRequests.map((item) => {
-        if (item._id == req.body.id) sendTome = true;
-    });
-    myData.sentRequests.map((item) => {
-        if (item._id == req.body.id) iSentToHim = true;
-    });
-    myData.connections.map((item) => {
-        if (item._id == req.body.id) alreadyFriend = true;
-    });
-    if (sendTome)
-        return res
-            .status(400)
-            .json("User has already sent connection request to you");
-    if (iSentToHim)
-        return res.status(400).json("Connection request is already sent");
-    if (alreadyFriend)
-        return res.status(400).json("User is already connected with you");
-    myData.sentRequests.push(friendData._id);
-    friendData.recievedRequests.push(myData._id);
-    await myData.save();
-    await friendData.save();
-    res.status(200).json(myData);
+  const friendData = await User.findById(req.body.id);
+  const myData = await User.findById(req.user._id);
+  if (!friendData || !myData || req.id == req.user._id)
+    return res.status(400).json("Invalid user");
+  let sendTome = false,
+    iSentToHim = false,
+    alreadyFriend = false;
+  myData.recievedRequests.map((item) => {
+    if (item._id == req.body.id) sendTome = true;
+  });
+  myData.sentRequests.map((item) => {
+    if (item._id == req.body.id) iSentToHim = true;
+  });
+  myData.connections.map((item) => {
+    if (item._id == req.body.id) alreadyFriend = true;
+  });
+  if (sendTome)
+    return res
+      .status(400)
+      .json("User has already sent connection request to you");
+  if (iSentToHim)
+    return res.status(400).json("Connection request is already sent");
+  if (alreadyFriend)
+    return res.status(400).json("User is already connected with you");
+  myData.sentRequests.push(friendData._id);
+  friendData.recievedRequests.push(myData._id);
+  await myData.save();
+  await friendData.save();
+  res.status(200).json(myData);
 };
 
 const acceptRequest = async (req, res) => {
-    console.log(req.body.id, req.user._id);
-    const friendData = await User.findById(req.body.id);
-    const myData = await User.findById(req.user._id);
-    if (!friendData || !myData || req.id == req.user._id)
-        return res.status(400).json("Invalid user");
-    let sendTome = false;
-    myData.recievedRequests.map((item) => {
-        if (item._id == req.body.id) sendTome = true;
-    });
-    if (!sendTome) {
-        return res.status(400).json("you don't recieve request");
-    }
-    let result = await User.findByIdAndUpdate(req.body.id, {
-        $pull: { sentRequests: req.user._id },
-        $push: { connections: req.user._id },
-    });
-    await User.findByIdAndUpdate(req.user._id, {
-        $pull: { recievedRequests: req.body.id },
-        $push: { connections: req.body.id },
-    });
+  console.log(req.body.id, req.user._id);
+  const friendData = await User.findById(req.body.id);
+  const myData = await User.findById(req.user._id);
+  if (!friendData || !myData || req.id == req.user._id)
+    return res.status(400).json("Invalid user");
+  let sendTome = false;
+  myData.recievedRequests.map((item) => {
+    if (item._id == req.body.id) sendTome = true;
+  });
+  if (!sendTome) {
+    return res.status(400).json("you don't recieve request");
+  }
+  let result = await User.findByIdAndUpdate(req.body.id, {
+    $pull: { sentRequests: req.user._id },
+    $push: { connections: req.user._id },
+  });
+  await User.findByIdAndUpdate(req.user._id, {
+    $pull: { recievedRequests: req.body.id },
+    $push: { connections: req.body.id },
+  });
 
-    res.status(200).json(result);
+  res.status(200).json(result);
 };
 
 const cancelRequest = async (req, res) => {
-    const friendData = await User.findById(req.body.id);
-    const myData = await User.findById(req.user._id);
-    if (!friendData || !myData || req.id == req.user._id)
-        return res.status(400).json("Invalid user");
-    let sent = false;
-    myData.sentRequests.map((item) => {
-        if (item._id == req.body.id) sent = true;
-    });
-    if (!sent)
-        return res
-            .status(400)
-            .json("You have not sent connection request to cancel");
+  const friendData = await User.findById(req.body.id);
+  const myData = await User.findById(req.user._id);
+  if (!friendData || !myData || req.id == req.user._id)
+    return res.status(400).json("Invalid user");
+  let sent = false;
+  myData.sentRequests.map((item) => {
+    if (item._id == req.body.id) sent = true;
+  });
+  if (!sent)
+    return res
+      .status(400)
+      .json("You have not sent connection request to cancel");
 
-    let result = await User.findByIdAndUpdate(req.user._id, {
-        $pull: { sentRequests: req.body.id },
-    });
-    await User.findByIdAndUpdate(req.body.id, {
-        $pull: { recievedRequests: req.user._id },
-    });
+  let result = await User.findByIdAndUpdate(req.user._id, {
+    $pull: { sentRequests: req.body.id },
+  });
+  await User.findByIdAndUpdate(req.body.id, {
+    $pull: { recievedRequests: req.user._id },
+  });
 
-    res.status(200).json(result);
+  res.status(200).json(result);
 };
-
 
 const signIn = async (req, res) => {
   const data = await User.findOne({ email: req.body.email });
@@ -161,6 +173,15 @@ const getFriends = async (req, res) => {
   res.json(result);
 };
 
+const search = async (req,res) =>{
+  const users  = await User.find({})
+  let result = []
+  users.forEach(user => {
+    if(user.name.includes(req.query['name']) )
+      result.push(user)
+  });
+  res.json(result)
+}
 module.exports = {
   signUp,
   signIn,
@@ -168,5 +189,6 @@ module.exports = {
   acceptRequest,
   cancelRequest,
   unFriend,
-  getFriends
+  getFriends,
+  search
 };
