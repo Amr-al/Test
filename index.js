@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 app.use(express.json());
 app.use(cors())
 
-mongoose.connect("mongodb://0.0.0.0:27017/Test", {
+mongoose.connect("mongodb+srv://social:rFqI6RtGGXx5On6x@cluster0.7bm6sj4.mongodb.net/test", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
