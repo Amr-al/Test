@@ -1,20 +1,22 @@
 const { Post } = require("../models/postModel");
 
 const createPost = async (req, res) => {
+  console.log(req.body);
     let type = "",
-      content = "test";
+      content =req.body.content;
+      console.log(req.file);
     if (req.file) {
-      for (let i = 0; i < req.file.filename.length; ++i) {
-        if (req.file.filename[i] >= "0" && req.file.filename[i] <= "9") continue;
-        if (req.file.filename[i] == ".") continue;
+      for (let i = req.file.filename.length - 1; i; --i) {
+        if (req.file.filename[i] == "." ) break;
         type += req.file.filename[i];
       }
     }
+    console.log(type);
     let image = "",
       video = "";
-    if (type == "jpg" || type == "png" || type == "JPEG" || type == "GIF")
+    if (type == "gpj" || type == "gnp" || type == "GEPJ" || type == "FIG")
       image = req.file.filename;
-    else if (type == "mp4") video = req.file.filename;
+    else if (type == "4pm") video = req.file.filename;
     else if (type != "") {
       return res.status(400).json("this type is not supported");
     }

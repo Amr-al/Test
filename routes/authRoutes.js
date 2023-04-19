@@ -1,5 +1,6 @@
 const router = require('express').Router()
-const { signUp, signIn, sendRequest, acceptRequest, cancelRequest,getFriends,unFriend } = require('../controller/authController')
+const { signUp, signIn, sendRequest, acceptRequest, cancelRequest,getFriends,unFriend, search } = require('../controller/authController')
+const check = require('../guard/validation')
 router.post('/signup'  ,  signUp)
 router.post('/signin', signIn)
 router.post('/sendrequest', check.isLogin, sendRequest)
@@ -7,4 +8,5 @@ router.post('/acceptrequest', check.isLogin, acceptRequest)
 router.post('/cancelrequest', check.isLogin, cancelRequest)
 router.post('/unfriend', check.isLogin, unFriend)
 router.get('/friends', check.isLogin , getFriends)
+router.get('/search', search)
 module.exports = router;
