@@ -7,6 +7,6 @@ const messageSchema = mongoose.Schema(
     chat: { type: mongoose.Schema.Types.ObjectId, ref: "chat" },
   },
 );
-
+//hi ziad
 const Message = mongoose.model("Message", messageSchema);
 module.exports = Message;
