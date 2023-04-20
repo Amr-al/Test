@@ -2,7 +2,7 @@ const Chat = require("../models/chatModel");
 const User = require("../models/userModel");
 
 exports.createChat = async (req, res) => {
-  if (!req.user._id) return res.status(401).json("un authorized");
+  
   let users = [req.user._id, req.body.id];
   try {
     const createdChat = await Chat.create({

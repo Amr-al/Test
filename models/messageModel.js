@@ -6,8 +6,7 @@ const messageSchema = mongoose.Schema(
     content: { type: String, trim: true },
     chat: { type: mongoose.Schema.Types.ObjectId, ref: "chat" },
   },
-  { timestamps: true }
 );
-
+//hi ziad
 const Message = mongoose.model("Message", messageSchema);
 module.exports = Message;
