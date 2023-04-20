@@ -49,7 +49,7 @@ const signUp = async (req, res) => {
 const sendRequest = async (req, res) => {
   const friendData = await User.findById(req.body.id);
   const myData = await User.findById(req.user._id);
-  if (!friendData || !myData || req.id == req.user._id)
+  if (!friendData || !myData || req.body.id == req.user._id)
     return res.status(400).json("Invalid user");
   let sendTome = false,
     iSentToHim = false,
